@@ -1,0 +1,92 @@
+import axios from "axios";
+
+<!-- Créaction du client AXIOS -->
+const axiosClient = axios.create({
+    baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`
+    
+})
+<!-- Mettre en place des intercepteurs qui sont des fonctions spéciales s'exucutant avant l'attribution de la 
+demande ou après la reception de la réponse 
+
+Exemple:Ici est utiliser l'intercepteur  Use() avant de faire une demande, il prends en paramètre l'objet config qu'il retourne
+  -->
+
+axiosClient.interceptors.request.use((config) =>{
+    
+    return config;
+})
+
+export default axiosClient;
+
+
+
+
+
+import axios from "axios";
+
+/* Créaction du client AXIOS */
+
+const axiosClient = axios.create({
+    //baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`
+    baseURL: "http://localhost:8000/api"
+
+})
+
+/* Mettre en place des intercepteurs qui sont des fonctions spéciales s'exucutant avant l'attribution de la 
+demande ou après la reception de la réponse 
+
+Exemple:Ici est utiliser l'intercepteur  Use() avant de faire une demande, il prends en paramètre l'objet 
+config qu'il retourne encore . On peut justement modifier cette config lorsque nous retournons ça , et c'est ce qui sera
+fait ici.
+
+*/
+
+axiosClient.interceptors.request.use((config) =>{
+    /* Recupération du token et stockage de celle ci dans le LocalStorage */
+    const token = localStorage.getItem('ACCESS_TOKEN');
+    /* Configuration de l'en tête d'authentification */
+    config.headers.Authorization = `Bearer ${token}`;
+    return config;
+})
+
+/*  Mettre en place des intercepteurs de réponse client d'accès correct.
+   Ici use() prends en paramètre deux fonctions l'une lorsque l'accès est correcte et l'autre 
+   lorsque l'accès est rejectée
+*/
+axiosClient.interceptors.response.use(
+    /* La première fonction prends en paramètre response et retourne la reponse */
+    (response)=>{
+           return response; 
+}, 
+    /* La première fonction prends en paramètre error et retourne le type d'error en cas de rejet */
+     (error) =>{
+    /* la réponse de rejet du serveur sera une propriété de l'erreur. On fait 
+    juste une destructuration de response, tout simple les erreurs de réponse sont plusieurs,  */
+    try{
+
+        const {response} = error;
+        if(response.status === 401){
+            /* Cet type d'erreur signifie que la demande a été bien faite mais l'utilisateur
+            n'est pas authorizé, exemple un utilisateur landa veut voir la liste des utilisateurs sans avoir
+            un token valide ou pas un token pour certain raison. Ainsi la demande est faite mais il serait 
+            problable que le jeton d'accès est expriré ou incorrect. Dans cet cas on supprime le jeton d'accès dans 
+            le localStorage */
+            localStorage.removeItem('ACCESS_TOKEN');
+            
+        }else if (response.status === 404) {
+            //Show not found
+          }
+    }catch(e){
+        console.error(e);
+    }
+    throw error;
+
+})
+
+
+export default axiosClient;
+
+&nbsp; //pour espacement
+
+Use Effetct () return toujours ce qu'on lui passe en parametre à chaque action d'un utilisateur
+
